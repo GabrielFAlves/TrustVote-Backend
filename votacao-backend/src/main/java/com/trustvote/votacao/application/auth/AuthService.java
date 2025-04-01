@@ -1,5 +1,8 @@
 package com.trustvote.votacao.application.auth;
 
+import com.trustvote.votacao.application.auth.dto.AuthResponse;
+import com.trustvote.votacao.application.auth.dto.LoginRequest;
+import com.trustvote.votacao.application.auth.dto.RegisterRequest;
 import com.trustvote.votacao.domain.shared.Cpf;
 import com.trustvote.votacao.domain.shared.Email;
 import com.trustvote.votacao.domain.shared.Phone;
@@ -20,7 +23,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
 
-    public String register(RegisterRequest request) {
+    public AuthResponse register(RegisterRequest request) {
         var user = new User(
                 UUID.randomUUID(),
                 request.getName(),
@@ -30,10 +33,11 @@ public class AuthService {
                 passwordEncoder.encode(request.getPassword())
         );
         userRepository.save(user);
-        return jwtService.generateToken(user.getCpf().getValue());
+        var token = jwtService.generateToken(user.getCpf().getValue());
+        return new AuthResponse(token, "Bearer", "Usuário registrado com sucesso");
     }
 
-    public String login(LoginRequest request) {
+    public AuthResponse login(LoginRequest request) {
         var user = userRepository.findByCpf(request.getCpf())
                 .orElseThrow(() -> new RuntimeException("CPF não encontrado"));
 
@@ -41,6 +45,8 @@ public class AuthService {
             throw new RuntimeException("Senha incorreta");
         }
 
-        return jwtService.generateToken(user.getCpf().getValue());
+        var token = jwtService.generateToken(user.getCpf().getValue());
+        return new AuthResponse(token, "Bearer", "Login realizado com sucesso");
     }
+
 }

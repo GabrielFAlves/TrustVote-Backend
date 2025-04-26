@@ -13,16 +13,22 @@ public class User {
     private Email email;
     private Phone phone;
     private String password;
+    private boolean voted;
+    private String walletAddress;
+    private String privateKey;
 
     public User() {}
 
-    public User(UUID id, String name, Cpf cpf, Email email, Phone phone, String password) {
+    public User(UUID id, String name, Cpf cpf, Email email, Phone phone, String password, boolean voted, String walletAddress, String privateKey) {
         this.id = id;
         this.name = name;
         this.cpf = cpf;
         this.email = email;
         this.phone = phone;
         this.password = password;
+        this.voted = voted;
+        this.walletAddress = walletAddress;
+        this.privateKey = privateKey;
     }
 
     public UUID getId() {
@@ -49,6 +55,18 @@ public class User {
         return password;
     }
 
+    public boolean getVoted() {
+        return voted;
+    }
+
+    public String getWalletAddress() {
+        return walletAddress;
+    }
+
+    public String getPrivateKey() {
+        return privateKey;
+    }
+
     public void setId(UUID id) {
         this.id = id;
     }
@@ -71,5 +89,17 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public void setVoted(boolean voted) {
+        this.voted = voted;
+    }
+
+    public void setWalletAddress(String walletAddress) {
+        this.walletAddress = walletAddress;
+    }
+
+    public void setPrivateKey(String privateKey) {
+        this.privateKey = privateKey;
     }
 }

@@ -3,7 +3,6 @@ package com.trustvote.votacao.infrastructure.security;
 import com.trustvote.votacao.domain.user.UserRepository;
 import com.trustvote.votacao.infrastructure.persistence.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,7 +18,6 @@ import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
-@Profile("never")
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;

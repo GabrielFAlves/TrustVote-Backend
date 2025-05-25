@@ -20,7 +20,6 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Profile("never")
 public class AuthService {
 
     private final UserRepository userRepository;

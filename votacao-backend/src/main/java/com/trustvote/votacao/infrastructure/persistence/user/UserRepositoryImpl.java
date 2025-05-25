@@ -10,7 +10,6 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-@Profile("never")
 @RequiredArgsConstructor
 public class UserRepositoryImpl implements UserRepository {
 

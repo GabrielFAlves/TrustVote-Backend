@@ -3,7 +3,6 @@ package com.trustvote.votacao.infrastructure.security;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -11,7 +10,6 @@ import java.util.Date;
 import java.util.function.Function;
 
 @Service
-@Profile("never")
 public class JwtService {
 
     @Value("${jwt.secret}")

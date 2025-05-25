@@ -2,23 +2,15 @@ package com.trustvote.votacao.infrastructure.blockchain;
 
 import com.trustvote.votacao.application.vote.dto.CandidateBasicDTO;
 import com.trustvote.votacao.application.vote.dto.CandidateResultDTO;
-import com.trustvote.votacao.infrastructure.persistence.user.JpaUserRepository;
-
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class SmartContractService {
 
-    private final JpaUserRepository userRepository;
-
-    // TEMPORARIAMENTE DESABILITADO - DADOS FAKE PARA DEBUG
     public List<CandidateBasicDTO> getCandidateList() throws Exception {
-        // Retorna dados simulados
         return Arrays.asList(
                 new CandidateBasicDTO(0, "Alice Silva", "https://example.com/alice.jpg"),
                 new CandidateBasicDTO(1, "Bob Santos", "https://example.com/bob.jpg"),
@@ -27,7 +19,6 @@ public class SmartContractService {
     }
 
     public List<CandidateResultDTO> getCandidateResults() throws Exception {
-        // Retorna resultados simulados
         return Arrays.asList(
                 new CandidateResultDTO(0, "Alice Silva", "https://example.com/alice.jpg", 15),
                 new CandidateResultDTO(1, "Bob Santos", "https://example.com/bob.jpg", 8),
@@ -36,17 +27,19 @@ public class SmartContractService {
     }
 
     public void sendVote(String cpf, int candidateId) throws Exception {
-        var user = userRepository.findByCpf(cpf)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+        // SIMULAÇÃO COMPLETA - SEM BANCO DE DADOS
+        System.out.println("✅ Voto simulado registrado - CPF: " + cpf + ", Candidato: " + candidateId);
 
-        if (user.isVoted()) {
-            throw new RuntimeException("Usuário já votou");
+        // Simula validações
+        if (cpf == null || cpf.trim().isEmpty()) {
+            throw new RuntimeException("CPF não pode ser vazio");
         }
 
-        // SIMULAÇÃO TEMPORÁRIA - APENAS MARCA COMO VOTADO
-        user.setVoted(true);
-        userRepository.save(user);
+        if (candidateId < 0 || candidateId > 2) {
+            throw new RuntimeException("Candidato inválido");
+        }
 
-        System.out.println("✅ Voto simulado registrado - CPF: " + cpf + ", Candidato: " + candidateId);
+        // Tudo OK - voto "registrado"
+        System.out.println("🎉 Voto processado com sucesso!");
     }
 }

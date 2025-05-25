@@ -2,21 +2,18 @@ package com.trustvote.votacao.infrastructure.blockchain;
 
 import com.trustvote.votacao.application.vote.dto.CandidateBasicDTO;
 import com.trustvote.votacao.application.vote.dto.CandidateResultDTO;
-import com.trustvote.votacao.infrastructure.persistence.user.JpaUserRepository;
 import com.trustvote.votacao.infrastructure.blockchain.contracts.Voting;
+import com.trustvote.votacao.infrastructure.persistence.user.JpaUserRepository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.Credentials;
-import org.web3j.crypto.Hash;
-import org.web3j.crypto.Sign;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.FastRawTransactionManager;
 import org.web3j.tx.gas.StaticGasProvider;
 import org.web3j.tx.response.PollingTransactionReceiptProcessor;
-import org.web3j.utils.Numeric;
 
 import java.math.BigInteger;
 import java.util.ArrayList;

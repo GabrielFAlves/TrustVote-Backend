@@ -19,7 +19,7 @@ import org.web3j.crypto.Keys;
 import java.util.UUID;
 
 @Service
-@Profile("dev")
+@Profile("never")
 @RequiredArgsConstructor
 public class AuthService {
 

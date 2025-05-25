@@ -4,12 +4,14 @@ import com.trustvote.votacao.domain.user.UserRepository;
 import com.trustvote.votacao.infrastructure.persistence.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
 
 @Service
 @Primary
 @RequiredArgsConstructor
+@Profile("never")
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final UserRepository userRepository;

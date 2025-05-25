@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@Profile("dev")
+@Profile("never")
 @RequiredArgsConstructor
 public class AuthController {
 

@@ -4,11 +4,13 @@ import com.trustvote.votacao.domain.user.User;
 import com.trustvote.votacao.domain.user.UserRepository;
 import com.trustvote.votacao.infrastructure.persistence.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
+@Profile("never")
 @RequiredArgsConstructor
 public class UserRepositoryImpl implements UserRepository {
 

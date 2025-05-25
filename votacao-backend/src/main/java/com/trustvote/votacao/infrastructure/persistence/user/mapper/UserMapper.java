@@ -18,9 +18,7 @@ public class UserMapper {
                 new Email(entity.getEmail()),
                 new Phone(entity.getPhone()),
                 entity.getPassword(),
-                entity.isVoted(),
-                entity.getWalletAddress(),
-                entity.getPrivateKey()
+                entity.isVoted()
         );
     }
 
@@ -32,8 +30,6 @@ public class UserMapper {
                 .email(user.getEmail().getValue())
                 .phone(user.getPhone().getValue())
                 .password(user.getPassword())
-                .walletAddress(user.getWalletAddress())
-                .privateKey(user.getPrivateKey())
                 .build();
     }
 

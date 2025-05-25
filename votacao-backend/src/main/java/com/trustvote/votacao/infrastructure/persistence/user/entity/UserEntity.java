@@ -34,10 +34,4 @@ public class UserEntity {
     @Column(nullable = false)
     private boolean voted;
 
-    @Column(name = "wallet_address", nullable = false, unique = true)
-    private String walletAddress;
-
-    @Column(name = "private_key", nullable = false)
-    private String privateKey;
-
 }

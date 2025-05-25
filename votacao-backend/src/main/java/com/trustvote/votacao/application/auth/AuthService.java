@@ -27,11 +27,6 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
         try {
-            // Gerar carteira (chave privada e endereço)
-            ECKeyPair ecKeyPair = Keys.createEcKeyPair();
-            String privateKey = ecKeyPair.getPrivateKey().toString(16);
-            String walletAddress = "0x" + Keys.getAddress(ecKeyPair);
-
             var user = new User(
                     UUID.randomUUID(),
                     request.getName(),
@@ -39,9 +34,8 @@ public class AuthService {
                     new Email(request.getEmail()),
                     new Phone(request.getPhone()),
                     passwordEncoder.encode(request.getPassword()),
-                    false,
-                    walletAddress,
-                    privateKey
+                    false
+                    // SEM walletAddress e privateKey
             );
 
             userRepository.save(user);

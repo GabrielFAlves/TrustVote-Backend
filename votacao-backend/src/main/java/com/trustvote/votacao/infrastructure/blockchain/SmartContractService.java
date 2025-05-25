@@ -23,7 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SmartContractService {
 
-    private final Credentials credentials;
+    // REMOVIDO: private final Credentials credentials;
     private final JpaUserRepository userRepository;
 
     @Value("${blockchain.rpc-url}")
@@ -31,6 +31,10 @@ public class SmartContractService {
 
     @Value("${CONTRACT_ADDRESS}")
     private String contractAddress;
+
+    // ADICIONADO: Private key como valor
+    @Value("${blockchain.private-key}")
+    private String privateKey;
 
     public void sendVote(String cpf, int candidateId) throws Exception {
         var user = userRepository.findByCpf(cpf)
@@ -41,6 +45,9 @@ public class SmartContractService {
         }
 
         Web3j web3j = Web3j.build(new HttpService(rpc));
+
+        // MUDANÇA: Criar credentials aqui
+        Credentials credentials = Credentials.create(privateKey);
 
         var txManager = new FastRawTransactionManager(
                 web3j,
@@ -104,6 +111,9 @@ public class SmartContractService {
     private Voting loadContract() {
         Web3j web3j = Web3j.build(new HttpService(rpc));
 
+        // MUDANÇA: Criar credentials aqui também
+        Credentials credentials = Credentials.create(privateKey);
+
         var txManager = new FastRawTransactionManager(
                 web3j, credentials, 10,
                 new PollingTransactionReceiptProcessor(web3j, 15_000, 40)
@@ -116,5 +126,4 @@ public class SmartContractService {
 
         return Voting.load(contractAddress, web3j, txManager, gasProvider);
     }
-
 }

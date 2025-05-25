@@ -2,44 +2,128 @@ package com.trustvote.votacao.infrastructure.blockchain;
 
 import com.trustvote.votacao.application.vote.dto.CandidateBasicDTO;
 import com.trustvote.votacao.application.vote.dto.CandidateResultDTO;
-import org.springframework.stereotype.Service;
+import com.trustvote.votacao.infrastructure.blockchain.contracts.Voting;
+import com.trustvote.votacao.infrastructure.persistence.user.JpaUserRepository;
 
-import java.util.Arrays;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.web3j.crypto.Credentials;
+import org.web3j.protocol.Web3j;
+import org.web3j.protocol.http.HttpService;
+import org.web3j.tx.FastRawTransactionManager;
+import org.web3j.tx.gas.StaticGasProvider;
+import org.web3j.tx.response.PollingTransactionReceiptProcessor;
+
+import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class SmartContractService {
 
-    public List<CandidateBasicDTO> getCandidateList() throws Exception {
-        return Arrays.asList(
-                new CandidateBasicDTO(0, "Alice Silva", "https://example.com/alice.jpg"),
-                new CandidateBasicDTO(1, "Bob Santos", "https://example.com/bob.jpg"),
-                new CandidateBasicDTO(2, "Carol Oliveira", "https://example.com/carol.jpg")
+    // REMOVIDO: private final Credentials credentials;
+    private final JpaUserRepository userRepository;
+
+    @Value("${blockchain.rpc-url}")
+    private String rpc;
+
+    @Value("${CONTRACT_ADDRESS}")
+    private String contractAddress;
+
+    // ADICIONADO: Private key como valor
+    @Value("${blockchain.private-key}")
+    private String privateKey;
+
+    public void sendVote(String cpf, int candidateId) throws Exception {
+        var user = userRepository.findByCpf(cpf)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        if (user.isVoted()) {
+            throw new RuntimeException("Usuário já votou");
+        }
+
+        Web3j web3j = Web3j.build(new HttpService(rpc));
+
+        // MUDANÇA: Criar credentials aqui
+        Credentials credentials = Credentials.create(privateKey);
+
+        var txManager = new FastRawTransactionManager(
+                web3j,
+                credentials, // credenciais do backend (admin)
+                10, // Chain ID da Optimism Mainnet
+                new PollingTransactionReceiptProcessor(web3j, 15_000, 40)
         );
+
+        var gasProvider = new StaticGasProvider(
+                BigInteger.valueOf(1_000_000_000L), // 1 Gwei
+                BigInteger.valueOf(200_000)
+        );
+
+        var contract = Voting.load(contractAddress, web3j, txManager, gasProvider);
+
+        System.out.println("📨 Enviando voto com CPF: " + cpf);
+
+        var receipt = contract.vote(cpf, BigInteger.valueOf(candidateId)).send();
+
+        System.out.println("✅ Voto confirmado. TxHash: " + receipt.getTransactionHash());
+
+        user.setVoted(true);
+        userRepository.save(user);
+    }
+
+    public List<CandidateBasicDTO> getCandidateList() throws Exception {
+        var contract = loadContract();
+        List<Voting.Candidate> candidates = contract.getAllCandidates().send();
+
+        List<CandidateBasicDTO> list = new ArrayList<>();
+        for (int i = 0; i < candidates.size(); i++) {
+            var candidate = candidates.get(i);
+            list.add(new CandidateBasicDTO(
+                    i,
+                    candidate.name,
+                    candidate.photoUrl
+            ));
+        }
+
+        return list;
     }
 
     public List<CandidateResultDTO> getCandidateResults() throws Exception {
-        return Arrays.asList(
-                new CandidateResultDTO(0, "Alice Silva", "https://example.com/alice.jpg", 15),
-                new CandidateResultDTO(1, "Bob Santos", "https://example.com/bob.jpg", 8),
-                new CandidateResultDTO(2, "Carol Oliveira", "https://example.com/carol.jpg", 3)
-        );
+        var contract = loadContract();
+        List<Voting.Candidate> candidates = contract.getAllCandidates().send();
+
+        List<CandidateResultDTO> list = new ArrayList<>();
+        for (int i = 0; i < candidates.size(); i++) {
+            var candidate = candidates.get(i);
+            list.add(new CandidateResultDTO(
+                    i,
+                    candidate.name,
+                    candidate.photoUrl,
+                    candidate.voteCount.longValue()
+            ));
+        }
+
+        return list;
     }
 
-    public void sendVote(String cpf, int candidateId) throws Exception {
-        // SIMULAÇÃO COMPLETA - SEM BANCO DE DADOS
-        System.out.println("✅ Voto simulado registrado - CPF: " + cpf + ", Candidato: " + candidateId);
+    private Voting loadContract() {
+        Web3j web3j = Web3j.build(new HttpService(rpc));
 
-        // Simula validações
-        if (cpf == null || cpf.trim().isEmpty()) {
-            throw new RuntimeException("CPF não pode ser vazio");
-        }
+        // MUDANÇA: Criar credentials aqui também
+        Credentials credentials = Credentials.create(privateKey);
 
-        if (candidateId < 0 || candidateId > 2) {
-            throw new RuntimeException("Candidato inválido");
-        }
+        var txManager = new FastRawTransactionManager(
+                web3j, credentials, 10,
+                new PollingTransactionReceiptProcessor(web3j, 15_000, 40)
+        );
 
-        // Tudo OK - voto "registrado"
-        System.out.println("🎉 Voto processado com sucesso!");
+        var gasProvider = new StaticGasProvider(
+                BigInteger.valueOf(1_000_000_000L), // 1 Gwei
+                BigInteger.valueOf(200_000)
+        );
+
+        return Voting.load(contractAddress, web3j, txManager, gasProvider);
     }
 }

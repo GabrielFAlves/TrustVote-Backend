@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 @Service
 @Primary
 @RequiredArgsConstructor
-@Profile("never")
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final UserRepository userRepository;

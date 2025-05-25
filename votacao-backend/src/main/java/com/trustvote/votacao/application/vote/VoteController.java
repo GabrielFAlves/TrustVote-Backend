@@ -16,14 +16,29 @@ public class VoteController {
     @PostMapping("/send")
     public ResponseEntity<?> sendVote(@RequestBody VoteRequest request) {
         try {
-            contractService.sendVote(
-                    request.getCpf(),
-                    request.getWalletAddress(),
-                    request.getCandidateId()
-            );
+            contractService.sendVote(request.getCpf(), request.getCandidateId());
             return ResponseEntity.ok("Voto enviado com sucesso!");
         } catch (Exception e) {
+            e.printStackTrace(); // <-- Adiciona isso para ver o erro exato no console
             return ResponseEntity.badRequest().body("Erro ao votar: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/candidates")
+    public ResponseEntity<?> getCandidates() {
+        try {
+            return ResponseEntity.ok(contractService.getCandidateList());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Erro ao buscar candidatos: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/results")
+    public ResponseEntity<?> getResults() {
+        try {
+            return ResponseEntity.ok(contractService.getCandidateResults());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Erro ao buscar resultados: " + e.getMessage());
         }
     }
 

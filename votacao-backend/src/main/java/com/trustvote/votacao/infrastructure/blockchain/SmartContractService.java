@@ -1,5 +1,7 @@
 package com.trustvote.votacao.infrastructure.blockchain;
 
+import com.trustvote.votacao.application.vote.dto.CandidateBasicDTO;
+import com.trustvote.votacao.application.vote.dto.CandidateResultDTO;
 import com.trustvote.votacao.infrastructure.persistence.user.JpaUserRepository;
 import com.trustvote.votacao.infrastructure.blockchain.contracts.Voting;
 
@@ -7,15 +9,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.Credentials;
+import org.web3j.crypto.Hash;
+import org.web3j.crypto.Sign;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
-import org.web3j.tx.RawTransactionManager;
+import org.web3j.tx.FastRawTransactionManager;
 import org.web3j.tx.gas.StaticGasProvider;
-import org.web3j.crypto.Sign;
-import org.web3j.crypto.Hash;
+import org.web3j.tx.response.PollingTransactionReceiptProcessor;
 import org.web3j.utils.Numeric;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +35,7 @@ public class SmartContractService {
     @Value("${CONTRACT_ADDRESS}")
     private String contractAddress;
 
-    public void sendVote(String cpf, String walletAddress, int candidateId) throws Exception {
+    public void sendVote(String cpf, int candidateId) throws Exception {
         var user = userRepository.findByCpf(cpf)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
@@ -40,40 +45,79 @@ public class SmartContractService {
 
         Web3j web3j = Web3j.build(new HttpService(rpc));
 
-        // Use o chainId da Amoy (Polygon testnet): 80002
-        var txManager = new RawTransactionManager(web3j, credentials, 80002);
+        var txManager = new FastRawTransactionManager(
+                web3j,
+                credentials, // credenciais do backend (admin)
+                10, // Chain ID da Optimism Mainnet
+                new PollingTransactionReceiptProcessor(web3j, 15_000, 40)
+        );
 
-        // Usar gasPrice manualmente (mínimo 25 Gwei), e gasLimit suficiente (300000)
-        BigInteger gasPrice = BigInteger.valueOf(25_000_000_000L); // 25 Gwei
-        BigInteger gasLimit = BigInteger.valueOf(300_000);
-        var gasProvider = new StaticGasProvider(gasPrice, gasLimit);
+        var gasProvider = new StaticGasProvider(
+                BigInteger.valueOf(1_000_000_000L), // 1 Gwei
+                BigInteger.valueOf(200_000)
+        );
 
         var contract = Voting.load(contractAddress, web3j, txManager, gasProvider);
 
-        // 1. Criar o hash da mensagem
-        byte[] message = Numeric.hexStringToByteArray(walletAddress);
-        byte[] messageHash = Hash.sha3(message);
+        System.out.println("📨 Enviando voto com CPF: " + cpf);
 
-        // 2. Formatar como "Ethereum Signed Message"
-        String prefix = "\u0019Ethereum Signed Message:\n32";
-        byte[] prefixBytes = prefix.getBytes();
-        byte[] ethMessage = new byte[prefixBytes.length + messageHash.length];
-        System.arraycopy(prefixBytes, 0, ethMessage, 0, prefixBytes.length);
-        System.arraycopy(messageHash, 0, ethMessage, prefixBytes.length, messageHash.length);
-        byte[] ethSignedMessageHash = Hash.sha3(ethMessage);
+        var receipt = contract.vote(cpf, BigInteger.valueOf(candidateId)).send();
 
-        // 3. Assinar com a private key do backend
-        Sign.SignatureData sig = Sign.signMessage(ethSignedMessageHash, credentials.getEcKeyPair(), false);
-        byte[] signature = new byte[65];
-        System.arraycopy(sig.getR(), 0, signature, 0, 32);
-        System.arraycopy(sig.getS(), 0, signature, 32, 32);
-        signature[64] = sig.getV()[0];
+        System.out.println("✅ Voto confirmado. TxHash: " + receipt.getTransactionHash());
 
-        // 4. Enviar a transação
-        contract.vote(walletAddress, BigInteger.valueOf(candidateId), signature).send();
-
-        // 5. Marcar como votado
         user.setVoted(true);
         userRepository.save(user);
     }
+
+    public List<CandidateBasicDTO> getCandidateList() throws Exception {
+        var contract = loadContract();
+        List<Voting.Candidate> candidates = contract.getAllCandidates().send();
+
+        List<CandidateBasicDTO> list = new ArrayList<>();
+        for (int i = 0; i < candidates.size(); i++) {
+            var candidate = candidates.get(i);
+            list.add(new CandidateBasicDTO(
+                    i,
+                    candidate.name,
+                    candidate.photoUrl
+            ));
+        }
+
+        return list;
+    }
+
+    public List<CandidateResultDTO> getCandidateResults() throws Exception {
+        var contract = loadContract();
+        List<Voting.Candidate> candidates = contract.getAllCandidates().send();
+
+        List<CandidateResultDTO> list = new ArrayList<>();
+        for (int i = 0; i < candidates.size(); i++) {
+            var candidate = candidates.get(i);
+            list.add(new CandidateResultDTO(
+                    i,
+                    candidate.name,
+                    candidate.photoUrl,
+                    candidate.voteCount.longValue()
+            ));
+        }
+
+        return list;
+    }
+
+    private Voting loadContract() {
+        Web3j web3j = Web3j.build(new HttpService(rpc));
+
+        var txManager = new FastRawTransactionManager(
+                web3j, credentials, 10,
+                new PollingTransactionReceiptProcessor(web3j, 15_000, 40)
+        );
+
+        var gasProvider = new StaticGasProvider(
+                BigInteger.valueOf(1_000_000_000L), // 1 Gwei
+                BigInteger.valueOf(200_000)
+        );
+
+        return Voting.load(contractAddress, web3j, txManager, gasProvider);
+    }
+
 }

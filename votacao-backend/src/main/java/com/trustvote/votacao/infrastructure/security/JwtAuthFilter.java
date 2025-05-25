@@ -18,6 +18,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Component
+@Profile("never")
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 

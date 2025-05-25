@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.function.Function;
 
 @Service
+@Profile("never")
 public class JwtService {
 
     @Value("${jwt.secret}")

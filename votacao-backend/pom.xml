@@ -21,12 +21,25 @@
 		<java.version>17</java.version>
 	</properties>
 
+	<!-- REPOSITÓRIOS ADICIONAIS PARA WEB3J -->
+	<repositories>
+		<repository>
+			<id>jitpack</id>
+			<url>https://jitpack.io</url>
+		</repository>
+		<repository>
+			<id>consensys</id>
+			<url>https://artifacts.consensys.net/public/maven/maven/</url>
+		</repository>
+	</repositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 
+		<!-- MUDANÇA: PostgreSQL em vez de MySQL -->
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
@@ -74,17 +87,11 @@
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>com.mysql</groupId>
-			<artifactId>mysql-connector-j</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-
-		<!-- Web3j -->
+		<!-- MUDANÇA: Web3j versão estável -->
 		<dependency>
 			<groupId>org.web3j</groupId>
 			<artifactId>core</artifactId>
-			<version>4.11.3</version>
+			<version>4.10.3</version>
 		</dependency>
 	</dependencies>
 
@@ -116,7 +123,7 @@
 				</configuration>
 			</plugin>
 
-			<!-- ✅ Web3j Maven Plugin para gerar classe do contrato -->
+			<!-- Web3j Maven Plugin para gerar classe do contrato -->
 			<plugin>
 				<groupId>org.web3j</groupId>
 				<artifactId>web3j-maven-plugin</artifactId>

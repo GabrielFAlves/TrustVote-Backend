@@ -10,6 +10,7 @@ import com.trustvote.votacao.domain.user.User;
 import com.trustvote.votacao.domain.user.UserRepository;
 import com.trustvote.votacao.infrastructure.security.JwtService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.ECKeyPair;
@@ -18,6 +19,7 @@ import org.web3j.crypto.Keys;
 import java.util.UUID;
 
 @Service
+@Profile("dev")
 @RequiredArgsConstructor
 public class AuthService {
 

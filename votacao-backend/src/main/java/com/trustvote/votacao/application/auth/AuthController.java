@@ -4,11 +4,13 @@ import com.trustvote.votacao.application.auth.dto.AuthResponse;
 import com.trustvote.votacao.application.auth.dto.LoginRequest;
 import com.trustvote.votacao.application.auth.dto.RegisterRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
+@Profile("dev")
 @RequiredArgsConstructor
 public class AuthController {
 

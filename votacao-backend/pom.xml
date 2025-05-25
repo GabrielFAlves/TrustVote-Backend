@@ -122,30 +122,6 @@
 					</excludes>
 				</configuration>
 			</plugin>
-
-			<!-- Web3j Maven Plugin para gerar classe do contrato -->
-			<plugin>
-				<groupId>org.web3j</groupId>
-				<artifactId>web3j-maven-plugin</artifactId>
-				<version>4.9.8</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>generate-sources</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<soliditySourceFiles>
-						<directory>${project.basedir}/src/main/resources/contracts</directory>
-						<includes>
-							<include>Voting.sol</include>
-						</includes>
-					</soliditySourceFiles>
-					<outputDirectory>${project.basedir}/src/main/java</outputDirectory>
-					<packageName>com.trustvote.votacao.infrastructure.blockchain.contracts</packageName>
-				</configuration>
-			</plugin>
 		</plugins>
 	</build>
 </project>

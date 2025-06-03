@@ -9,16 +9,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/votes")
 @RequiredArgsConstructor
-@CrossOrigin(
-        origins = {
-                "http://localhost:5173",
-                "http://localhost:3000",
-                "https://seu-dominio-frontend.com"
-        },
-        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS},
-        allowCredentials = "true",
-        allowedHeaders = "*"
-)
 public class VoteController {
 
     private final SmartContractService contractService;
